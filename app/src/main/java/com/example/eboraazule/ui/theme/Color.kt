@@ -2,49 +2,60 @@ package com.example.eboraazule.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Ceramic-inspired palette
-val AzureBlue = Color(0xFF007FFF)
-val CeramicYellow = Color(0xFFFFD700)
-val TerraCotta = Color(0xFFE2725B)
+/**
+ * Paleta de Colores "EboraAzule"
+ * Inspirada en la Cerámica de Talavera de la Reina (Patrimonio Inmaterial de la Humanidad).
+ */
 
-// Light Scheme Colors
-val PrimaryLight = Color(0xFF0061A4)
-val OnPrimaryLight = Color(0xFFFFFFFF)
-val PrimaryContainerLight = Color(0xFFD1E4FF)
-val OnPrimaryContainerLight = Color(0xFF001D36)
+// Colores Base de Talavera
+val AzulCobalto = Color(0xFF0047AB) // El alma de la cerámica
+val BlancoVidriado = Color(0xFFF5F5F5) // Fondo cerámico
+val AmarilloCeramica = Color(0xFFF9D71C) // Detalle y luz
+val VerdeCobre = Color(0xFF3B7A57) // Elementos vegetales
+val NegroManganeso = Color(0xFF2C2C2C) // Perfilado y sombras
 
-val SecondaryLight = Color(0xFF6D5E00)
-val OnSecondaryLight = Color(0xFFFFFFFF)
-val SecondaryContainerLight = Color(0xFFFBE465)
+// Light Scheme (Senior & Refined)
+val PrimaryLight = AzulCobalto
+val OnPrimaryLight = Color.White
+val PrimaryContainerLight = Color(0xFFD6E3FF)
+val OnPrimaryContainerLight = AzulCobalto
+
+val SecondaryLight = AmarilloCeramica
+val OnSecondaryLight = NegroManganeso
+val SecondaryContainerLight = Color(0xFFFFF199)
 val OnSecondaryContainerLight = Color(0xFF211B00)
 
-val TertiaryLight = Color(0xFF9C4331)
-val OnTertiaryLight = Color(0xFFFFFFFF)
-val TertiaryContainerLight = Color(0xFFFFDAD3)
-val OnTertiaryContainerLight = Color(0xFF3E0500)
+val TertiaryLight = VerdeCobre
+val OnTertiaryLight = Color.White
+val TertiaryContainerLight = Color(0xFFBCECCF)
+val OnTertiaryContainerLight = Color(0xFF002111)
 
-val BackgroundLight = Color(0xFFF8FDFF)
-val OnBackgroundLight = Color(0xFF001F25)
-val SurfaceLight = Color(0xFFF8FDFF)
-val OnSurfaceLight = Color(0xFF001F25)
+val BackgroundLight = BlancoVidriado
+val OnBackgroundLight = NegroManganeso
+val SurfaceLight = Color.White
+val OnSurfaceLight = NegroManganeso
+val SurfaceVariantLight = Color(0xFFE1E2EC)
+val OnSurfaceVariantLight = Color(0xFF44474F)
 
-// Dark Scheme Colors
-val PrimaryDark = Color(0xFF9ECAFF)
-val OnPrimaryDark = Color(0xFF003258)
-val PrimaryContainerDark = Color(0xFF00497D)
-val OnPrimaryContainerDark = Color(0xFFD1E4FF)
+// Dark Scheme (Elegancia Nocturna)
+val PrimaryDark = Color(0xFFADC6FF)
+val OnPrimaryDark = Color(0xFF002E69)
+val PrimaryContainerDark = Color(0xFF004494)
+val OnPrimaryContainerDark = Color(0xFFD6E3FF)
 
-val SecondaryDark = Color(0xFFDEC84C)
-val OnSecondaryDark = Color(0xFF393000)
-val SecondaryContainerDark = Color(0xFF524600)
-val OnSecondaryContainerDark = Color(0xFFFBE465)
+val SecondaryDark = Color(0xFFE2C800)
+val OnSecondaryDark = Color(0xFF373100)
+val SecondaryContainerDark = Color(0xFF4F4700)
+val OnSecondaryContainerDark = Color(0xFFFFF199)
 
-val TertiaryDark = Color(0xFFFFB4A5)
-val OnTertiaryDark = Color(0xFF5F1608)
-val TertiaryContainerDark = Color(0xFF7D2C1C)
-val OnTertiaryContainerDark = Color(0xFFFFDAD3)
+val TertiaryDark = Color(0xFFA1D0B4)
+val OnTertiaryDark = Color(0xFF033821)
+val TertiaryContainerDark = Color(0xFF22513B)
+val OnTertiaryContainerDark = Color(0xFFBCECCF)
 
-val BackgroundDark = Color(0xFF001F25)
-val OnBackgroundDark = Color(0xFFA6EEFF)
-val SurfaceDark = Color(0xFF001F25)
-val OnSurfaceDark = Color(0xFFA6EEFF)
+val BackgroundDark = Color(0xFF1B1B1F)
+val OnBackgroundDark = Color(0xFFE3E2E6)
+val SurfaceDark = Color(0xFF1B1B1F)
+val OnSurfaceDark = Color(0xFFE3E2E6)
+val SurfaceVariantDark = Color(0xFF44474F)
+val OnSurfaceVariantDark = Color(0xFFC4C6D0)
