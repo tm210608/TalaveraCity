@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Stylized Ceramic Vase / Jar shape in White/Yellow -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,25 C45,25 38,32 38,40 C38,48 45,55 54,55 C63,55 70,48 70,40 C70,32 63,25 54,25 Z M54,55 C40,55 30,65 30,80 L78,80 C78,65 68,55 54,55 Z" />
+    <!-- Decorative element in Ceramic Yellow -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M54,35 A5,5 0 1,1 53.99,35 Z" />
+</vector>
