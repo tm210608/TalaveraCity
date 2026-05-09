@@ -11,6 +11,7 @@ import com.example.eboraazule.EboraApplication
 import com.example.eboraazule.ui.screens.*
 import com.example.eboraazule.ui.viewmodel.EventsViewModel
 import com.example.eboraazule.ui.viewmodel.ExplorationViewModel
+import com.example.eboraazule.ui.viewmodel.EscaneoViewModel
 import com.example.eboraazule.ui.viewmodel.ProfileViewModel
 import com.example.eboraazule.ui.viewmodel.ViewModelFactory
 
@@ -51,7 +52,8 @@ fun EboraAzuleNavGraph(
                 CulturalEventsScreen(
                     viewModel = eventsViewModel,
                     onProfileClick = { backStack.add(Route.UserProfile) },
-                    onExploreClick = { backStack.add(Route.Exploration) }
+                    onExploreClick = { backStack.add(Route.Exploration) },
+                    onScanClick = { backStack.add(Route.Escaneo) }
                 )
             }
             entry<Route.UserProfile> {
@@ -69,6 +71,15 @@ fun EboraAzuleNavGraph(
                 )
                 ExplorationScreen(
                     viewModel = explorationViewModel,
+                    onBack = { if (backStack.size > 1) backStack.removeAt(backStack.size - 1) }
+                )
+            }
+            entry<Route.Escaneo> {
+                val escaneoViewModel: EscaneoViewModel = viewModel(
+                    factory = ViewModelFactory(appContainer.repository)
+                )
+                EscaneoScreen(
+                    viewModel = escaneoViewModel,
                     onBack = { if (backStack.size > 1) backStack.removeAt(backStack.size - 1) }
                 )
             }

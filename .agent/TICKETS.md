@@ -7,9 +7,10 @@
 - [x] **EA-104**: Commit & Verificación visual (Screenshot).
 
 ## Hito 2: Inteligencia de Escaneo (Fase 1)
-- [ ] **EA-201**: Agregar dependencias de ML Kit (Object Detection).
-- [ ] **EA-202**: Crear `ScannerViewModel` y `ScannerUiState`.
-- [ ] **EA-203**: Implementar `CameraPreview` con `Cenefa de Talavera`.
+- [x] **EA-201**: Agregar dependencias de ML Kit (Object Detection).
+- [x] **EA-202**: Crear `ScannerViewModel` y `ScannerUiState`.
+- [x] **EA-203**: Implementar `CameraPreview` con `Cenefa de Talavera`.
+- [x] **EA-204**: Integrar detección real con ML Kit (Detección básica de objetos).
 
 ## Hito 3: Persistencia y Gamificación
 - [ ] **EA-301**: Actualizar Room para guardar "Azulejos Coleccionados".

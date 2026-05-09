@@ -30,7 +30,8 @@ import com.example.eboraazule.ui.viewmodel.EventsViewModel
 fun CulturalEventsScreen(
     viewModel: EventsViewModel,
     onProfileClick: () -> Unit,
-    onExploreClick: () -> Unit
+    onExploreClick: () -> Unit,
+    onScanClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -45,6 +46,14 @@ fun CulturalEventsScreen(
                     )
                 },
                 actions = {
+                    IconButton(onClick = onScanClick) {
+                        Icon(
+                            imageVector = Icons.Rounded.CameraAlt,
+                            contentDescription = "Escanear",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                     IconButton(onClick = onProfileClick) {
                         Icon(
                             imageVector = Icons.Rounded.AccountCircle,

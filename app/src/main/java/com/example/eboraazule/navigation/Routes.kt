@@ -22,4 +22,7 @@ sealed interface Route : NavKey {
     
     @Serializable
     data object Exploration : Route
+
+    @Serializable
+    data object Escaneo : Route
 }

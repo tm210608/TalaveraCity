@@ -11,6 +11,7 @@ class ViewModelFactory(private val repository: CulturalRepository) : ViewModelPr
             modelClass.isAssignableFrom(EventsViewModel::class.java) -> EventsViewModel(repository) as T
             modelClass.isAssignableFrom(ProfileViewModel::class.java) -> ProfileViewModel(repository) as T
             modelClass.isAssignableFrom(ExplorationViewModel::class.java) -> ExplorationViewModel() as T
+            modelClass.isAssignableFrom(EscaneoViewModel::class.java) -> EscaneoViewModel(repository) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class")
         }
     }

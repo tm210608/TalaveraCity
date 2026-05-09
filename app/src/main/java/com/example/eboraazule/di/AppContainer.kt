@@ -30,6 +30,6 @@ class AppContainer(private val context: Context) {
     }
 
     val repository: CulturalRepository by lazy {
-        CulturalRepository(apiService, database.eventDao())
+        CulturalRepository(apiService, database.eventDao(), database.azulejoDao())
     }
 }

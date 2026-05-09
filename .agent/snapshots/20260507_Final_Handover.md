@@ -14,7 +14,8 @@
 
 #### 🛠️ Instrucciones para la Próxima Sesión:
 1.  Leer el archivo `.agent/TICKETS.md` para retomar el progreso.
-2.  Iniciar con la tarea **EA-201**: Añadir dependencias de `CameraX` y `ML Kit` en `build.gradle.kts`.
+2.  **IMPORTANTE**: Estamos trabajando en la rama `feature/EA-201-vision-infra`.
+3.  Iniciar con la tarea **EA-201**: Añadir dependencias de `CameraX` y `ML Kit`.
 3.  Implementar el `ScannerViewModel` siguiendo el patrón `UiState` definido en `workflow_optimizer_skills.md`.
 
 #### 💡 Nota Estratégica:

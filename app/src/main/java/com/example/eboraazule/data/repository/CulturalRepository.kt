@@ -1,8 +1,10 @@
 package com.example.eboraazule.data.repository
 
+import com.example.eboraazule.data.local.AzulejoDao
 import com.example.eboraazule.data.local.EventDao
 import com.example.eboraazule.data.local.toDomain
 import com.example.eboraazule.data.local.toEntity
+import com.example.eboraazule.data.model.Azulejo
 import com.example.eboraazule.data.model.CulturalEvent
 import com.example.eboraazule.data.remote.CulturalApiService
 import com.example.eboraazule.data.remote.toDomain
@@ -12,7 +14,8 @@ import kotlinx.coroutines.flow.map
 
 class CulturalRepository(
     private val apiService: CulturalApiService,
-    private val eventDao: EventDao
+    private val eventDao: EventDao,
+    private val azulejoDao: AzulejoDao
 ) {
     suspend fun getEvents(): Result<List<CulturalEvent>> {
         return try {
@@ -37,6 +40,20 @@ class CulturalRepository(
         } else {
             eventDao.saveEvent(event.toEntity())
         }
+    }
+
+    fun getAzulejosColeccionados(): Flow<List<Azulejo>> {
+        return azulejoDao.getAllAzulejos().map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+
+    suspend fun saveAzulejo(azulejo: Azulejo) {
+        azulejoDao.insertAzulejo(azulejo.toEntity())
+    }
+
+    suspend fun isAzulejoColeccionado(id: String): Boolean {
+        return azulejoDao.isAzulejoColeccionado(id)
     }
 
     private fun getMockEvents(): List<CulturalEvent> {
