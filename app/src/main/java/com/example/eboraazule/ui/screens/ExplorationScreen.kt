@@ -1,16 +1,15 @@
 package com.example.eboraazule.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,146 +17,283 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.eboraazule.R
+import com.example.eboraazule.data.model.PuntoInteres
 import com.example.eboraazule.ui.viewmodel.ExplorationViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.maps.android.compose.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ExplorationScreen(
     viewModel: ExplorationViewModel,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val selectedHotspot = uiState.selectedHotspot
+    val puntoSeleccionado = uiState.puntoInteresSeleccionado
+    
+    val locationPermissionState = rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
+
+    // Talavera de la Reina coords
+    val talavera = LatLng(39.9583, -4.8322)
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(talavera, 15f)
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // City Skyline Background
-        AsyncImage(
-            model = "https://images.unsplash.com/photo-1543783230-050414a6003b?auto=format&fit=crop&q=80&w=2000",
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
+        if (locationPermissionState.status.isGranted) {
+            // Mapa Dinámico con Estilo EboraAzule
+            GoogleMap(
+                modifier = Modifier.fillMaxSize(),
+                cameraPositionState = cameraPositionState,
+                properties = MapProperties(
+                    mapStyleOptions = MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style),
+                    isMyLocationEnabled = true
+                ),
+                uiSettings = MapUiSettings(
+                    zoomControlsEnabled = false,
+                    myLocationButtonEnabled = true
+                )
+            ) {
+                // Marcadores de Puntos de Interés
+                PuntoInteres.values().forEach { punto ->
+                    val markerState = rememberMarkerState(position = punto.coords)
+                    Marker(
+                        state = markerState,
+                        title = punto.titulo,
+                        onClick = {
+                            viewModel.seleccionarPuntoInteres(punto)
+                            false
+                        }
+                    )
+                }
+            }
+        } else {
+            // Pantalla de solicitud de permiso integrada en el mapa
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(32.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(Icons.Rounded.LocationOn, null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    stringResource(R.string.access_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    stringResource(R.string.access_desc),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+                Button(onClick = { locationPermissionState.launchPermissionRequest() }) {
+                    Text(stringResource(R.string.btn_allow_location))
+                }
+            }
+        }
 
-        // Dark overlay for focus
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.3f))
-        )
-
-        // Hotspots
-        HotspotMarker(
-            modifier = Modifier.align(Alignment.Center).offset(x = (-80).dp, y = (-40).dp),
-            onClick = { viewModel.onHotspotSelected(Hotspot.PuenteViejo) }
-        )
-
-        HotspotMarker(
-            modifier = Modifier.align(Alignment.Center).offset(x = 100.dp, y = 20.dp),
-            onClick = { viewModel.onHotspotSelected(Hotspot.CeramicaAzul) }
-        )
-
-        // Header
-        Row(
+        // Header Superior (Glassmorphism)
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            color = Color.Black.copy(alpha = 0.4f),
+            shape = RoundedCornerShape(24.dp)
         ) {
-            IconButton(
-                onClick = onBack,
-                colors = IconButtonDefaults.iconButtonColors(containerColor = Color.Black.copy(alpha = 0.5f))
+            Row(
+                modifier = Modifier.padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Volver", tint = Color.White)
+                IconButton(
+                    onClick = onBack,
+                    colors = IconButtonDefaults.iconButtonColors(containerColor = Color.White.copy(alpha = 0.2f))
+                ) {
+                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Volver", tint = Color.White)
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    "Mapa del Patrimonio",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White,
+                    fontWeight = FontWeight.Black
+                )
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                "Sinergia Talaverana",
-                style = MaterialTheme.typography.titleLarge,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
-            )
         }
 
+        // Panel de información inferior
         AnimatedVisibility(
-            visible = selectedHotspot != null,
-            enter = fadeIn(),
-            exit = fadeOut(),
+            visible = puntoSeleccionado != null,
+            enter = slideInVertically { it } + fadeIn(),
+            exit = slideOutVertically { it } + fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-            selectedHotspot?.let { hotspot ->
-                InfoPanel(hotspot = hotspot, onClose = { viewModel.onHotspotSelected(null) })
+            puntoSeleccionado?.let { punto ->
+                InfoPanel(
+                    punto = punto, 
+                    onClose = { viewModel.seleccionarPuntoInteres(null) },
+                    estaReproduciendo = uiState.estaReproduciendoAudio,
+                    progreso = uiState.progresoAudio,
+                    onToggleAudio = { viewModel.conmutarAudio() }
+                )
             }
         }
     }
 }
 
 @Composable
-fun HotspotMarker(modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Surface(
-        modifier = modifier
-            .size(48.dp)
-            .clip(CircleShape)
-            .clickable(onClick = onClick),
-        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
-        shape = CircleShape,
-        tonalElevation = 8.dp
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Icon(Icons.Rounded.Info, contentDescription = null, tint = Color.White)
-        }
-    }
-}
-
-@Composable
-fun InfoPanel(hotspot: Hotspot, onClose: () -> Unit) {
+fun InfoPanel(
+    punto: PuntoInteres, 
+    onClose: () -> Unit,
+    estaReproduciendo: Boolean,
+    progreso: Float,
+    onToggleAudio: () -> Unit
+) {
+    val context = LocalContext.current
+    
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp)
+            .padding(20.dp)
             .navigationBarsPadding(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(32.dp),
         colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
-            Text(
-                text = hotspot.title,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = hotspot.description,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Button(
-                onClick = onClose,
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
             ) {
-                Text("Cerrar")
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = punto.titulo,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        letterSpacing = (-0.5).sp
+                    )
+                    Text(
+                        text = "Patrimonio Histórico",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                IconButton(onClick = onClose) {
+                    Icon(Icons.Rounded.Close, contentDescription = "Cerrar")
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Sección de Audio-Cápsula (Susurros del Tajo)
+            AudioCapsulaCard(
+                narrador = punto.narrador,
+                estaReproduciendo = estaReproduciendo,
+                progreso = progreso,
+                onToggle = onToggleAudio
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = punto.descripcion,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 24.sp
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Button(
+                onClick = { 
+                    val gmmIntentUri = Uri.parse("google.navigation:q=${punto.coords.latitude},${punto.coords.longitude}")
+                    val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                    mapIntent.setPackage("com.google.android.apps.maps")
+                    context.startActivity(mapIntent)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                contentPadding = PaddingValues(16.dp)
+            ) {
+                Icon(Icons.Rounded.Directions, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Cómo llegar", fontWeight = FontWeight.Bold)
             }
         }
     }
 }
 
-enum class Hotspot(val title: String, val description: String) {
-    PuenteViejo(
-        "Puente Viejo",
-        "Este puente romano-medieval sobre el Tajo es el testigo más antiguo de la ciudad, uniendo las dos orillas y el camino hacia la cerámica."
-    ),
-    CeramicaAzul(
-        "Azul Azur Tradicional",
-        "El característico azul de Talavera se obtiene con cobalto, una técnica perfeccionada durante siglos que hoy define nuestro horizonte visual."
-    )
+@Composable
+fun AudioCapsulaCard(
+    narrador: String,
+    estaReproduciendo: Boolean,
+    progreso: Float,
+    onToggle: () -> Unit
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = onToggle,
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(
+                    imageVector = if (estaReproduciendo) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Column {
+                Text(
+                    "Susurros del Tajo: Audio-Guía",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    "Narrado por: $narrador",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                LinearProgressIndicator(
+                    progress = { progreso },
+                    modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                )
+            }
+        }
+    }
 }

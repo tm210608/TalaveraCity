@@ -1,0 +1,41 @@
+<resources>
+    <string name="app_name">EboraAzule</string>
+    <string name="city_name">Talavera de la Reina</string>
+
+    <!-- Splash & Welcome -->
+    <string name="greeting_morning">Good morning!</string>
+    <string name="greeting_afternoon">Good afternoon!</string>
+    <string name="greeting_night">Good evening!</string>
+    <string name="welcome_desc_morning">Start your route through the pottery workshops with the dawn light.</string>
+    <string name="welcome_desc_afternoon">Discover the secrets of the walls under the sun of Talavera.</string>
+    <string name="welcome_desc_night">The city lights up. Walk through stories and legends of ceramics.</string>
+    <string name="btn_explore">Explore Heritage</string>
+    <string name="btn_continue">Continue the Journey</string>
+
+    <!-- Access Screen -->
+    <string name="access_title">Explore Your Surroundings</string>
+    <string name="access_desc">To show you the cultural events and heritage around you in Talavera, we need to know your location.</string>
+    <string name="btn_allow_location">Enable Location</string>
+    <string name="btn_skip_location">View events without location</string>
+
+    <!-- Cultural Events -->
+    <string name="nav_home">Home</string>
+    <string name="nav_map">Map</string>
+    <string name="section_news">Municipal News</string>
+    <string name="section_experiences">Unique Experiences</string>
+    <string name="btn_read_more">Read more</string>
+    <string name="btn_explore_more">Explore</string>
+
+    <!-- Exploration Map -->
+    <string name="map_title">Heritage Map</string>
+    <string name="btn_directions">Directions</string>
+    <string name="poi_type">Historical Heritage</string>
+
+    <!-- Notifications -->
+    <string name="btn_share">Share</string>
+    <string name="btn_remind_me">Remind me</string>
+    <string name="notification_title">Event Reminder</string>
+    <string name="notification_desc">Don\'t miss this event today!</string>
+    <string name="perm_notif_title">Notification Permission</string>
+    <string name="perm_notif_desc">We need permission to send you reminders for your favorite events.</string>
+</resources>

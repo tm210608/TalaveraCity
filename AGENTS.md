@@ -23,9 +23,9 @@ Capa de Datos (BD local Room + API remota Retrofit)
 
 ### Archivos Clave y Responsabilidades
 - **`AppContainer.kt`**: Inyección de dependencias manual—inicializa Retrofit, BD Room, y repositorio
-- **`CulturalRepository.kt`**: Orquesta datos locales/remotos; actualmente devuelve eventos simulados con retraso de 1500ms
+- **`CulturalRepository.kt`**: Orquesta datos locales/remotos; sincroniza con el feed RSS oficial del Ayuntamiento de Talavera.
 - **`NavGraph.kt`**: Toda la lógica de navegación; crea ViewModels con factory y gestiona pila de atrás
-- **`Routes.kt`**: Interfaz sellada que define 6 destinos de navegación (Welcome→LandscapeCeramic→CeramicAccess→CulturalEvents→UserProfile/Exploration)
+- **`Routes.kt`**: Interfaz sellada que define 5 destinos de navegación (Welcome→LandscapeCeramic→CeramicAccess→CulturalEvents→Exploration)
 
 ### Modelos de Datos y Conversiones
 - **Modelo de dominio**: `CulturalEvent` (serializable, id/título/fecha/ubicación/imagenUrl/descripción)

@@ -1,38 +1,54 @@
 package com.example.eboraazule.ui.screens
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.eboraazule.R
+import java.util.Calendar
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun WelcomeScreen(
-    onExplore: () -> Unit
+    onExplore: () -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
+    val currentTime = remember { Calendar.getInstance() }
+    val hour = currentTime.get(Calendar.HOUR_OF_DAY)
+    
+    val (greetingRes, descriptionRes) = when {
+        hour in 6..12 -> R.string.greeting_morning to R.string.welcome_desc_morning
+        hour in 13..20 -> R.string.greeting_afternoon to R.string.welcome_desc_afternoon
+        else -> R.string.greeting_night to R.string.welcome_desc_night
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
-        // High-resolution landscape image (ID: 0bc5f10ee4e2464f951ab455ff94b522)
-        // Using Coil for potential URL or local placeholder
+        // High-resolution landscape image
         AsyncImage(
-            model = "https://images.unsplash.com/photo-1543783230-050414a6003b?auto=format&fit=crop&q=80&w=2000", // Representative landscape of Spain
+            model = "https://images.unsplash.com/photo-1543783230-050414a6003b?auto=format&fit=crop&q=80&w=2000",
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
             error = painterResource(id = R.drawable.placeholder)
         )
         
-        // Gradient overlay for readability and premium feel
+        // Gradient overlay
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -40,7 +56,7 @@ fun WelcomeScreen(
                     Brush.verticalGradient(
                         colors = listOf(
                             Color.Transparent,
-                            Color.Black.copy(alpha = 0.7f)
+                            Color.Black.copy(alpha = 0.8f)
                         ),
                         startY = 300f
                     )
@@ -56,16 +72,22 @@ fun WelcomeScreen(
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "EboraAzule",
-                style = MaterialTheme.typography.displayLarge,
-                color = MaterialTheme.colorScheme.secondary, // Ceramic Yellow
-                fontWeight = FontWeight.ExtraBold,
-                textAlign = TextAlign.Center
-            )
+            with(sharedTransitionScope) {
+                Text(
+                    text = "EboraAzule",
+                    style = MaterialTheme.typography.displayLarge,
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontWeight = FontWeight.ExtraBold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.sharedElement(
+                        rememberSharedContentState(key = "titulo_app"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                )
+            }
             
             Text(
-                text = "Bienvenida Talavera",
+                text = stringResource(greetingRes),
                 style = MaterialTheme.typography.headlineMedium,
                 color = Color.White,
                 fontWeight = FontWeight.Light,
@@ -75,7 +97,7 @@ fun WelcomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
             
             Text(
-                text = "Descubre la ciudad donde el Tajo susurra historias a través de su cerámica milenaria.",
+                text = stringResource(descriptionRes),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White.copy(alpha = 0.9f),
                 textAlign = TextAlign.Center,
@@ -95,7 +117,7 @@ fun WelcomeScreen(
                 )
             ) {
                 Text(
-                    text = "Explorar Patrimonio",
+                    text = stringResource(R.string.btn_explore),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )

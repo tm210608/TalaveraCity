@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.*
@@ -12,6 +14,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -39,46 +43,50 @@ fun EscaneoScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Escáner de Cerámica") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = "Atrás"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
-                )
+    Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+        if (permissionState.status.isGranted) {
+            CameraPreview(
+                onDetection = { label, confidence ->
+                    viewModel.procesarDeteccion(label, confidence)
+                }
             )
-        },
-        containerColor = Color.Black
-    ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            if (permissionState.status.isGranted) {
-                CameraPreview(
-                    onDetection = { label, confidence ->
-                        viewModel.procesarDeteccion(label, confidence)
-                    }
-                )
-                
-                CenefaTalaveraOverlay()
-                
-                ScanningFeedback(
-                    uiState = uiState, 
-                    onReset = { viewModel.reiniciarEscaneo() },
-                    onSave = { label -> viewModel.guardarAzulejo(label) }
-                )
-            } else {
-                PermissionDeniedContent { permissionState.launchPermissionRequest() }
-            }
+            
+            CenefaTalaveraOverlay(
+                isIdentified = uiState is com.example.eboraazule.ui.viewmodel.EscaneoUiState.Identificado
+            )
+            
+            ScanningFeedback(
+                uiState = uiState, 
+                onReset = { viewModel.reiniciarEscaneo() },
+                onCollect = { pieza -> viewModel.coleccionarPieza(pieza) }
+            )
+        } else {
+            PermissionDeniedContent { permissionState.launchPermissionRequest() }
         }
+
+        // TopAppBar como overlay transparente
+        CenterAlignedTopAppBar(
+            title = { Text("Escáner de Cerámica", fontWeight = FontWeight.Bold) },
+            navigationIcon = {
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .background(Color.Black.copy(alpha = 0.3f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = "Atrás",
+                        tint = Color.White
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                containerColor = Color.Transparent,
+                titleContentColor = Color.White
+            ),
+            modifier = Modifier.statusBarsPadding()
+        )
     }
 }
 

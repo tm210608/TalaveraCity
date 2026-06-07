@@ -5,17 +5,23 @@ import androidx.room.Room
 import com.example.eboraazule.data.local.EboraDatabase
 import com.example.eboraazule.data.remote.CulturalApiService
 import com.example.eboraazule.data.repository.CulturalRepository
+import com.example.eboraazule.util.NotificationHelper
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 class AppContainer(private val context: Context) {
+
+    val notificationHelper: NotificationHelper by lazy {
+        NotificationHelper(context)
+    }
 
     private val database: EboraDatabase by lazy {
         Room.databaseBuilder(
             context,
             EboraDatabase::class.java,
             "ebora_database"
-        ).build()
+        ).fallbackToDestructiveMigration()
+            .build()
     }
 
     private val retrofit: Retrofit by lazy {
@@ -30,6 +36,6 @@ class AppContainer(private val context: Context) {
     }
 
     val repository: CulturalRepository by lazy {
-        CulturalRepository(apiService, database.eventDao(), database.azulejoDao())
+        CulturalRepository(apiService, database.eventDao())
     }
 }

@@ -1,30 +1,74 @@
 package com.example.eboraazule.data.repository
 
-import com.example.eboraazule.data.local.AzulejoDao
-import com.example.eboraazule.data.local.EventDao
-import com.example.eboraazule.data.local.toDomain
-import com.example.eboraazule.data.local.toEntity
-import com.example.eboraazule.data.model.Azulejo
+import com.example.eboraazule.data.local.*
+import com.example.eboraazule.data.model.CeramicPiece
 import com.example.eboraazule.data.model.CulturalEvent
 import com.example.eboraazule.data.remote.CulturalApiService
 import com.example.eboraazule.data.remote.toDomain
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+import com.example.eboraazule.data.remote.TalaveraRssParser
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 class CulturalRepository(
     private val apiService: CulturalApiService,
-    private val eventDao: EventDao,
-    private val azulejoDao: AzulejoDao
+    private val eventDao: EventDao
 ) {
+    private val rssParser = TalaveraRssParser()
+
     suspend fun getEvents(): Result<List<CulturalEvent>> {
-        return try {
-            val response = apiService.getEvents()
-            Result.success(response.map { it.toDomain() })
-        } catch (e: Exception) {
-            // Fallback to mock data if API fails, or return failure
-            // Result.failure(e)
-            Result.success(getMockEvents())
+        return withContext(Dispatchers.IO) {
+            try {
+                val responseBody = apiService.getRssFeed("https://www.talavera.es/agenda/feed/")
+                val events = rssParser.parse(responseBody.byteStream())
+                
+                if (events.isNotEmpty()) {
+                    eventDao.deleteCachedEvents(isNews = false)
+                    eventDao.insertCachedEvents(events.map { it.toCachedEntity(isNews = false) })
+                    Result.success(events)
+                } else {
+                    val cached = eventDao.getCachedEvents()
+                    if (cached.isNotEmpty()) {
+                        Result.success(cached.map { it.toDomain() })
+                    } else {
+                        Result.success(getMockEvents())
+                    }
+                }
+            } catch (e: Exception) {
+                val cached = eventDao.getCachedEvents()
+                if (cached.isNotEmpty()) {
+                    Result.success(cached.map { it.toDomain() })
+                } else {
+                    Result.success(getMockEvents())
+                }
+            }
+        }
+    }
+
+    suspend fun getOfficialNews(): Result<List<CulturalEvent>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val responseBody = apiService.getRssFeed("https://www.talavera.es/noticias/feed/")
+                val news = rssParser.parse(responseBody.byteStream())
+                
+                if (news.isNotEmpty()) {
+                    eventDao.deleteCachedEvents(isNews = true)
+                    eventDao.insertCachedEvents(news.map { it.toCachedEntity(isNews = true) })
+                    Result.success(news)
+                } else {
+                    val cached = eventDao.getCachedNews()
+                    Result.success(cached.map { it.toDomain() })
+                }
+            } catch (e: Exception) {
+                val cached = eventDao.getCachedNews()
+                if (cached.isNotEmpty()) {
+                    Result.success(cached.map { it.toDomain() })
+                } else {
+                    Result.failure(e)
+                }
+            }
         }
     }
 
@@ -42,18 +86,58 @@ class CulturalRepository(
         }
     }
 
-    fun getAzulejosColeccionados(): Flow<List<Azulejo>> {
-        return azulejoDao.getAllAzulejos().map { entities ->
+    suspend fun isEventSaved(id: String): Boolean {
+        return eventDao.isEventSaved(id)
+    }
+
+    suspend fun getEventById(id: String): CulturalEvent? {
+        return withContext(Dispatchers.IO) {
+            // Buscar en guardados, caché o mocks
+            val saved = eventDao.getAllSavedEventsOnce()
+            saved.find { it.id == id }?.toDomain() 
+                ?: eventDao.getCachedEvents().find { it.id == id }?.toDomain()
+                ?: eventDao.getCachedNews().find { it.id == id }?.toDomain()
+                ?: getMockEvents().find { it.id == id }
+        }
+    }
+
+    // Lógica de Colección de Cerámica
+    fun getCollectedPieces(): Flow<List<CeramicPiece>> {
+        return eventDao.getAllCollectedPieces().map { entities ->
             entities.map { it.toDomain() }
         }
     }
 
-    suspend fun saveAzulejo(azulejo: Azulejo) {
-        azulejoDao.insertAzulejo(azulejo.toEntity())
+    suspend fun collectPiece(piece: CeramicPiece) {
+        eventDao.collectPiece(piece.toEntity())
     }
 
-    suspend fun isAzulejoColeccionado(id: String): Boolean {
-        return azulejoDao.isAzulejoColeccionado(id)
+    suspend fun isPieceCollected(id: String): Boolean {
+        return eventDao.isPieceCollected(id)
+    }
+
+    fun identifyCeramic(label: String): CeramicPiece? {
+        // En una app real, esto podría llamar a una API o usar un modelo local más complejo
+        // Mapeamos etiquetas comunes de ML Kit a series reales de Talavera
+        return when (label.lowercase()) {
+            "pottery", "tableware" -> CeramicPiece(
+                id = "serie_azul_01",
+                name = "Plato de la Serie Azul",
+                series = "Serie Azul (Renacimiento)",
+                century = "Siglo XVI",
+                description = "La serie más emblemática, caracterizada por su azul cobalto sobre fondo blanco vidriado.",
+                imageUrl = "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?auto=format&fit=crop&q=80&w=800"
+            )
+            "vase", "jug" -> CeramicPiece(
+                id = "serie_policroma_01",
+                name = "Jarra de la Serie Policroma",
+                series = "Serie Policroma Mulatilla",
+                century = "Siglo XVIII",
+                description = "Destaca por el uso de colores amarillos, anaranjados y verdes cobre.",
+                imageUrl = "https://images.unsplash.com/photo-1578321272176-b7bac0429b5a?auto=format&fit=crop&q=80&w=800"
+            )
+            else -> null
+        }
     }
 
     private fun getMockEvents(): List<CulturalEvent> {

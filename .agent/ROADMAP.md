@@ -13,15 +13,15 @@ Para elevar **EboraAzule** a un estándar de "Senior Developer", seguiremos este
 - **Objetivo**: Una UI que respire Talavera y sea intuitiva.
 - **Tareas**:
     - [ ] Diseño de un sistema de iconos personalizado inspirado en motivos de cerámica.
-    - [ ] Implementación de "UI Consciente del Contexto" (ej. resaltar eventos cercanos si el GPS está activo).
-    - [ ] Mejora de las transiciones entre pantallas (Shared Element Transitions en Compose).
+    - [x] **UI Consciente del Contexto**: Resaltar eventos y acciones si el usuario está cerca de un POI.
+    - [x] **Shared Element Transitions**: Transiciones fluidas entre pantallas principales.
 
 ## Fase 3: Excelencia Técnica y Android 15 (Artesano de Android)
 - **Objetivo**: Rendimiento de vanguardia y APIs modernas.
 - **Tareas**:
-    - [ ] **Edge-to-Edge**: Forzar la visualización completa en Android 15.
+    - [x] **Edge-to-Edge**: Forzar la visualización completa en Android 15.
     - [ ] **IA Local**: Explorar `Gemini Nano` para descripciones automáticas de obras.
-    - [ ] **Optimización de Compose**: Auditoría de recomposiciones y uso de `Baseline Profiles`.
+    - [x] **Refinamiento de Escáner**: Feedback visual animado al detectar piezas.
 
 ---
 

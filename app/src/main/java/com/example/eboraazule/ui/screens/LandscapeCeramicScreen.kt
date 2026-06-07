@@ -1,48 +1,44 @@
 package com.example.eboraazule.ui.screens
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.eboraazule.R
 
 @Composable
 fun LandscapeCeramicScreen(
-    onNext: () -> Unit,
-    onBack: () -> Unit
+    onContinue: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        // Landscape and Ceramic image (ID: 365b675457b143be899c3d608ac5f530)
         AsyncImage(
-            model = "https://images.unsplash.com/photo-1590059345033-91223961b72e?auto=format&fit=crop&q=80&w=2000", // Artistic Spain view
+            model = "https://images.unsplash.com/photo-1590076214050-7f24097449bc?auto=format&fit=crop&q=80&w=2000",
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop,
-            error = painterResource(id = R.drawable.placeholder)
+            contentScale = ContentScale.Crop
         )
 
-        // Overlay with ceramic pattern feel
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
-                        ),
-                        startY = 500f
+                            Color.Black.copy(alpha = 0.4f),
+                            Color.Black.copy(alpha = 0.8f)
+                        )
                     )
                 )
         )
@@ -50,49 +46,49 @@ fun LandscapeCeramicScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(32.dp)
                 .statusBarsPadding()
-                .navigationBarsPadding()
-                .padding(32.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+                .navigationBarsPadding(),
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TextButton(
-                onClick = onBack,
-                modifier = Modifier.align(Alignment.Start)
+            Text(
+                text = "Patrimonio Vivo",
+                style = MaterialTheme.typography.displayMedium,
+                color = Color.White,
+                fontWeight = FontWeight.Black
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = "La cerámica de Talavera es Patrimonio Inmaterial de la Humanidad. Cada trazo cuenta una historia de siglos.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White.copy(alpha = 0.9f),
+                textAlign = TextAlign.Center,
+                lineHeight = 26.sp
+            )
+            
+            Spacer(modifier = Modifier.height(48.dp))
+            
+            Button(
+                onClick = onContinue,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
             ) {
-                Text("Volver", color = MaterialTheme.colorScheme.primary)
-            }
-
-            Column {
                 Text(
-                    text = "Sinergia Eterna",
-                    style = MaterialTheme.typography.displaySmall,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    text = "Continuar el Viaje",
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Text(
-                    text = "Contempla cómo el horizonte histórico de Talavera se funde con la maestría de su alfarería, reconocida por la UNESCO.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.3
-                )
-                
-                Spacer(modifier = Modifier.height(48.dp))
-                
-                LargeFloatingActionButton(
-                    onClick = onNext,
-                    modifier = Modifier.align(Alignment.End),
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                        contentDescription = "Continuar"
-                    )
-                }
             }
+            
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
