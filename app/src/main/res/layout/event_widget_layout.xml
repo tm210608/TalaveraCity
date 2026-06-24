@@ -10,7 +10,7 @@
         android:id="@+id/widget_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="EboraAzule"
+        android:text="TalaveraCity"
         android:textColor="#0047AB"
         android:textSize="14sp"
         android:textStyle="bold" />
@@ -34,3 +34,8 @@
         android:textColor="#3B7A57"
         android:textSize="12sp" />
 </LinearLayout>
+
+
+
+
+

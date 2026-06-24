@@ -20,7 +20,7 @@ Para elevar **EboraAzule** a un estándar de "Senior Developer", seguiremos este
 - **Objetivo**: Rendimiento de vanguardia y APIs modernas.
 - **Tareas**:
     - [x] **Edge-to-Edge**: Forzar la visualización completa en Android 15.
-    - [ ] **IA Local**: Explorar `Gemini Nano` para descripciones automáticas de obras.
+    - [x] **IA Local**: Integración de Gemini Nano para descripciones generativas.
     - [x] **Refinamiento de Escáner**: Feedback visual animado al detectar piezas.
 
 ---

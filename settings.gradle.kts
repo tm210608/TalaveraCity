@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "EboraAzule"
+rootProject.name = "TalaveraCity"
 include(":app")
  

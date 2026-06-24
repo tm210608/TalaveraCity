@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">EboraAzule</string>
+    <string name="app_name">TalaveraCity</string>
     <string name="city_name">Talavera de la Reina</string>
 
     <!-- Splash & Welcome -->
@@ -39,3 +39,8 @@
     <string name="perm_notif_title">Notification Permission</string>
     <string name="perm_notif_desc">We need permission to send you reminders for your favorite events.</string>
 </resources>
+
+
+
+
+

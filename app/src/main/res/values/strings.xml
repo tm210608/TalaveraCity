@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">EboraAzule</string>
+    <string name="app_name">TalaveraCity</string>
     <string name="city_name">Talavera de la Reina</string>
 
     <!-- Splash & Welcome -->
@@ -40,3 +40,8 @@
     <string name="perm_notif_desc">Necesitamos permiso para enviarte recordatorios de tus eventos favoritos.</string>
     <string name="google_maps_key">YOUR_KEY_HERE</string>
 </resources>
+
+
+
+
+

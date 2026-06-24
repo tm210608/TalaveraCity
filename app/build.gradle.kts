@@ -3,14 +3,17 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.jetbrains.kotlin.plugin.serialization)
+    alias(libs.plugins.dagger.hilt.android)
+    alias(libs.plugins.androidx.baselineprofile)
+    alias(libs.plugins.detekt)
 }
 
 android {
-    namespace = "com.example.eboraazule"
+    namespace = "com.talaveracity.app"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.example.eboraazule"
+        applicationId = "com.talaveracity.app"
         minSdk = 24
         targetSdk = 37
         versionCode = 1
@@ -34,6 +37,11 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    testOptions {
+        unitTests.all {
+            it.useJUnitPlatform()
+        }
     }
     packaging {
         jniLibs {
@@ -61,8 +69,12 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.text.google.fonts)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
+    "ksp"(libs.hilt.compiler)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -70,10 +82,12 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
+    implementation(libs.google.mlkit.genai.prompt)
     implementation(libs.google.mlkit.objectdetection)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.room.runtime)
     implementation(libs.coil.compose)
+    implementation(libs.converter.kotlinx.serialization)
     implementation(libs.converter.moshi)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
@@ -87,6 +101,10 @@ dependencies {
     testImplementation(libs.androidx.core)
     testImplementation(libs.androidx.junit)
     testImplementation(libs.junit)
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
     testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
