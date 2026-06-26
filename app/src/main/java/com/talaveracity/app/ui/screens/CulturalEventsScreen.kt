@@ -164,6 +164,13 @@ fun CulturalEventsScreen(
                         item {
                             GrecaTalavera(modifier = Modifier.padding(vertical = 8.dp))
                         }
+
+                        // Sección de Bandos/Avisos Críticos
+                        if (estado.bandos.isNotEmpty()) {
+                            item {
+                                AnnouncementsBanner(bandos = estado.bandos)
+                            }
+                        }
                         
                         // Sección de Actualidad (Noticias RSS)
                         if (estado.noticiasOficiales.isNotEmpty()) {
@@ -609,6 +616,46 @@ fun GlassEventCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 3,
                     lineHeight = 20.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AnnouncementsBanner(bandos: List<CulturalEvent>) {
+    val bando = bandos.first() // Mostramos el más reciente
+    Surface(
+        modifier = Modifier
+            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .fillMaxWidth(),
+        color = MaterialTheme.colorScheme.errorContainer,
+        shape = RoundedCornerShape(16.dp),
+        border = border(2.dp, MaterialTheme.colorScheme.error, RoundedCornerShape(16.dp))
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Rounded.Campaign, 
+                contentDescription = null, 
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(
+                    text = "AVISO MUNICIPAL",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Text(
+                    text = bando.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onErrorContainer
                 )
             }
         }

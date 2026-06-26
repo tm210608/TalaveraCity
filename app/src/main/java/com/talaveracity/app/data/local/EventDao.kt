@@ -42,6 +42,16 @@ interface EventDao {
 
     @Query("SELECT EXISTS(SELECT * FROM collected_pieces WHERE id = :id)")
     suspend fun isPieceCollected(id: String): Boolean
+
+    // Nuevos métodos para Información Oficial (Noticias, Agenda, Bandos)
+    @Query("SELECT * FROM official_info WHERE type = :type ORDER BY cachedAt DESC")
+    suspend fun getOfficialInfoByType(type: InfoType): List<OfficialInfoEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOfficialInfo(info: List<OfficialInfoEntity>)
+
+    @Query("DELETE FROM official_info WHERE type = :type")
+    suspend fun deleteOfficialInfoByType(type: InfoType)
 }
 
 

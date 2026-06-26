@@ -24,56 +24,58 @@ class CulturalRepositoryImpl @Inject constructor(
     private val rssParser = TalaveraRssParser()
 
     override suspend fun getEvents(): Result<List<CulturalEvent>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val responseBody = apiService.getRssFeed("https://www.talavera.es/agenda/feed/")
-                val events = rssParser.parse(responseBody.byteStream())
-                
-                if (events.isNotEmpty()) {
-                    eventDao.deleteCachedEvents(isNews = false)
-                    eventDao.insertCachedEvents(events.map { it.toCachedEntity(isNews = false) })
-                    Result.success(events)
-                } else {
-                    val cached = eventDao.getCachedEvents()
-                    if (cached.isNotEmpty()) {
-                        Result.success(cached.map { it.toDomain() })
-                    } else {
-                        Result.success(getMockEvents())
-                    }
-                }
-            } catch (e: Exception) {
-                val cached = eventDao.getCachedEvents()
-                if (cached.isNotEmpty()) {
-                    Result.success(cached.map { it.toDomain() })
-                } else {
-                    Result.success(getMockEvents())
-                }
-            }
-        }
+        return syncOfficialInfo(
+            url = "https://www.talavera.es/agenda/feed/",
+            type = InfoType.AGENDA,
+            fallbackMock = true
+        )
     }
 
     override suspend fun getOfficialNews(): Result<List<CulturalEvent>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val responseBody = apiService.getRssFeed("https://www.talavera.es/noticias/feed/")
-                val news = rssParser.parse(responseBody.byteStream())
-                
-                if (news.isNotEmpty()) {
-                    eventDao.deleteCachedEvents(isNews = true)
-                    eventDao.insertCachedEvents(news.map { it.toCachedEntity(isNews = true) })
-                    Result.success(news)
-                } else {
-                    val cached = eventDao.getCachedNews()
-                    Result.success(cached.map { it.toDomain() })
-                }
-            } catch (e: Exception) {
-                val cached = eventDao.getCachedNews()
-                if (cached.isNotEmpty()) {
-                    Result.success(cached.map { it.toDomain() })
-                } else {
-                    Result.failure(e)
-                }
+        return syncOfficialInfo(
+            url = "https://www.talavera.es/noticias/feed/",
+            type = InfoType.NEWS
+        )
+    }
+
+    override suspend fun getMunicipalAnnouncements(): Result<List<CulturalEvent>> {
+        // En una app real, el ayuntamiento podría tener un feed específico de bandos
+        // Por ahora usamos el feed de noticias filtrado o uno de avisos si existiera
+        return syncOfficialInfo(
+            url = "https://www.talavera.es/noticias/feed/", 
+            type = InfoType.ANNOUNCEMENT
+        )
+    }
+
+    private suspend fun syncOfficialInfo(
+        url: String, 
+        type: InfoType, 
+        fallbackMock: Boolean = false
+    ): Result<List<CulturalEvent>> = withContext(Dispatchers.IO) {
+        try {
+            val responseBody = apiService.getRssFeed(url)
+            val events = rssParser.parse(responseBody.byteStream())
+            
+            if (events.isNotEmpty()) {
+                eventDao.deleteOfficialInfoByType(type)
+                eventDao.insertOfficialInfo(events.map { it.toOfficialEntity(type) })
+                Result.success(events)
+            } else {
+                fetchCachedOrMock(type, fallbackMock)
             }
+        } catch (e: Exception) {
+            fetchCachedOrMock(type, fallbackMock)
+        }
+    }
+
+    private suspend fun fetchCachedOrMock(type: InfoType, fallbackMock: Boolean): Result<List<CulturalEvent>> {
+        val cached = eventDao.getOfficialInfoByType(type)
+        return if (cached.isNotEmpty()) {
+            Result.success(cached.map { it.toDomain() })
+        } else if (fallbackMock && type == InfoType.AGENDA) {
+            Result.success(getMockEvents())
+        } else {
+            Result.success(emptyList())
         }
     }
 
@@ -98,9 +100,10 @@ class CulturalRepositoryImpl @Inject constructor(
     override suspend fun getEventById(id: String): CulturalEvent? {
         return withContext(Dispatchers.IO) {
             val saved = eventDao.getAllSavedEventsOnce()
+            val allCached = InfoType.values().flatMap { eventDao.getOfficialInfoByType(it) }
+            
             saved.find { it.id == id }?.toDomain() 
-                ?: eventDao.getCachedEvents().find { it.id == id }?.toDomain()
-                ?: eventDao.getCachedNews().find { it.id == id }?.toDomain()
+                ?: allCached.find { it.id == id }?.toDomain()
                 ?: getMockEvents().find { it.id == id }
         }
     }
@@ -182,27 +185,7 @@ class CulturalRepositoryImpl @Inject constructor(
                 "Recinto Ferial",
                 "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80&w=800",
                 "La festividad más grande de la ciudad con conciertos y tradiciones."
-            ),
-            CulturalEvent(
-                "3",
-                "Taller de Alfarería en Vivo",
-                "Todos los Sábados",
-                "Plaza del Pan",
-                "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&q=80&w=800",
-                "Aprende de los maestros artesanos locales en un entorno histórico."
-            ),
-            CulturalEvent(
-                "4",
-                "Ruta Nocturna: Murallas y Torres",
-                "Viernes Noche",
-                "Punto de Encuentro: Oficina de Turismo",
-                "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800",
-                "Descubre los secretos de la ciudad bajo la luz de la luna."
             )
         )
     }
 }
-
-
-
-

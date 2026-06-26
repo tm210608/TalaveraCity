@@ -19,6 +19,7 @@ sealed class EventosUiState {
     data class Exito(
         val eventos: List<CulturalEvent>,
         val noticiasOficiales: List<CulturalEvent> = emptyList(),
+        val bandos: List<CulturalEvent> = emptyList(),
         val idsEventosGuardados: Set<String> = emptySet(),
         val puntoCercano: PuntoInteres? = null
     ) : EventosUiState()
@@ -42,14 +43,17 @@ class EventsViewModel @Inject constructor(private val repository: CulturalReposi
             
             val resultEventos = repository.getEvents()
             val resultNoticias = repository.getOfficialNews()
+            val resultBandos = repository.getMunicipalAnnouncements()
 
             if (resultEventos.isSuccess) {
                 val eventos = resultEventos.getOrNull() ?: emptyList()
                 val noticias = resultNoticias.getOrNull() ?: emptyList()
+                val bandos = resultBandos.getOrNull() ?: emptyList()
                 
                 _uiState.value = EventosUiState.Exito(
                     eventos = eventos,
-                    noticiasOficiales = noticias
+                    noticiasOficiales = noticias,
+                    bandos = bandos
                 )
                 
                 // Cargar IDs de guardados

@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 interface CulturalRepository {
     suspend fun getEvents(): Result<List<CulturalEvent>>
     suspend fun getOfficialNews(): Result<List<CulturalEvent>>
+    suspend fun getMunicipalAnnouncements(): Result<List<CulturalEvent>>
+
     fun getSavedEvents(): Flow<List<CulturalEvent>>
     suspend fun toggleSaveEvent(event: CulturalEvent)
     suspend fun isEventSaved(id: String): Boolean

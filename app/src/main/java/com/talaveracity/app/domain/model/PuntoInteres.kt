@@ -2,58 +2,95 @@ package com.talaveracity.app.domain.model
 
 import com.google.android.gms.maps.model.LatLng
 
+enum class PoiCategory {
+    MONUMENT,
+    MUSEUM,
+    CHURCH,
+    POTTERY,
+    HISTORY
+}
+
 enum class PuntoInteres(
     val id: String,
     val titulo: String, 
     val descripcion: String, 
     val coords: LatLng, 
-    val narrador: String,
+    val category: PoiCategory,
+    val imageUrl: String = "",
+    val narrador: String = "Guía Talavera",
     val radioMetros: Double = 100.0
 ) {
     PuenteViejo(
         "poi_puente",
-        "Puente Viejo",
-        "Este puente romano-medieval sobre el Tajo es el testigo más antiguo de la ciudad, uniendo las dos orillas y el camino hacia la cerámica.",
+        "Puente Viejo (Romano)",
+        "El testigo más antiguo sobre el Tajo, con origen romano y reconstrucciones medievales.",
         LatLng(39.9575, -4.8315),
-        "Anselmo, el Pescador"
+        PoiCategory.MONUMENT,
+        "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800"
     ),
-    CeramicaAzul(
-        "poi_museo",
+    MuseoRuizLuna(
+        "poi_museo_luna",
         "Museo Ruiz de Luna",
-        "Sede del patrimonio cerámico más importante de la ciudad. Antiguo convento de los Agustinos Recoletos.",
+        "Antiguo convento que alberga la mayor colección de cerámica de Talavera del mundo.",
         LatLng(39.9588, -4.8335),
-        "Juan Ruiz de Luna"
+        PoiCategory.MUSEUM,
+        "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?auto=format&fit=crop&q=80&w=800"
     ),
-    Basilica(
+    BasilicaPrado(
         "poi_basilica",
-        "Basílica de Nuestra Señora del Prado",
-        "Conocida como la 'Sixtina de la cerámica' por sus impresionantes azulejos de los siglos XVI al XX.",
+        "Basílica de Ntra. Sra. del Prado",
+        "La 'Sixtina de la Cerámica'. Sus paredes narran la historia de la ciudad en azulejos.",
         LatLng(39.9632, -4.8256),
-        "Fray Gabriel de Talavera"
+        PoiCategory.CHURCH,
+        "https://images.unsplash.com/photo-1543783230-050414a6003b?auto=format&fit=crop&q=80&w=800"
     ),
     TorreAlbarrana(
         "poi_torres",
         "Torres Albarranas",
-        "Majestuosas torres de defensa del siglo XIII. Son un símbolo de la resistencia histórica de Talavera.",
+        "Parte del sistema defensivo amurallado del siglo XIII, únicas en la península.",
         LatLng(39.9579, -4.8341),
-        "Capitán de la Guardia"
+        PoiCategory.MONUMENT
     ),
     AlfarCarmen(
         "poi_alfar",
         "El Alfar del Carmen",
-        "Antiguo alfar convertido en centro cultural. Representa la evolución industrial de nuestra cerámica.",
+        "Centro cultural en un antiguo alfar, preservando el proceso artesanal.",
         LatLng(39.9595, -4.8290),
-        "Maestra Alfarera"
+        PoiCategory.POTTERY
     ),
     PlazaPan(
         "poi_plaza",
         "Plaza del Pan",
-        "El centro neurálgico de la ciudad antigua, rodeada de edificios históricos y decorada con azulejería típica.",
+        "Corazón del casco antiguo, rodeada de la Colegiata y el Ayuntamiento.",
         LatLng(39.9583, -4.8322),
-        "El Sereno"
+        PoiCategory.HISTORY
+    ),
+    ColegiataSantaMaria(
+        "poi_colegiata",
+        "Colegiata de Santa María la Mayor",
+        "Templo de estilo gótico-mudéjar con un impresionante rosetón de cerámica.",
+        LatLng(39.9581, -4.8326),
+        PoiCategory.CHURCH
+    ),
+    MurallasTalavera(
+        "poi_murallas",
+        "Murallas de la Calle Carnicerías",
+        "El recinto amurallado mejor conservado, con sus imponentes torres y paseos.",
+        LatLng(39.9585, -4.8350),
+        PoiCategory.MONUMENT
+    ),
+    TeatroPalenque(
+        "poi_teatro",
+        "Teatro Palenque",
+        "Construido sobre los restos de la antigua iglesia de San Ginés.",
+        LatLng(39.9589, -4.8318),
+        PoiCategory.HISTORY
+    ),
+    PuenteMetal(
+        "poi_puente_hierro",
+        "Puente de Hierro (Reina Sofía)",
+        "Hito de la ingeniería de principios del siglo XX sobre el río Tajo.",
+        LatLng(39.9545, -4.8365),
+        PoiCategory.MONUMENT
     )
 }
-
-
-
-
