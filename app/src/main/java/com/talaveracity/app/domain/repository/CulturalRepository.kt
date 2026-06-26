@@ -18,6 +18,10 @@ interface CulturalRepository {
     suspend fun isPieceCollected(id: String): Boolean
     suspend fun generarHistoriaConIA(pieza: CeramicPiece): String?
     fun identifyCeramic(label: String): CeramicPiece?
+
+    // Puntos de Interés (Mapa)
+    fun getAllPois(): Flow<List<PuntoInteres>>
+    suspend fun syncPoisIfNeeded()
 }
 
 

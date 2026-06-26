@@ -42,8 +42,24 @@ interface EventDao {
 
     @Query("SELECT EXISTS(SELECT * FROM collected_pieces WHERE id = :id)")
     suspend fun isPieceCollected(id: String): Boolean
+
+    // Métodos para Información Oficial (Noticias, Agenda, Bandos)
+    @Query("SELECT * FROM official_info WHERE type = :type ORDER BY cachedAt DESC")
+    suspend fun getOfficialInfoByType(type: InfoType): List<OfficialInfoEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOfficialInfo(info: List<OfficialInfoEntity>)
+
+    @Query("DELETE FROM official_info WHERE type = :type")
+    suspend fun deleteOfficialInfoByType(type: InfoType)
+
+    // --- NUEVOS MÉTODOS PARA POIs ---
+    @Query("SELECT * FROM points_of_interest")
+    fun getAllPois(): Flow<List<PoiEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPois(pois: List<PoiEntity>)
+
+    @Query("SELECT COUNT(*) FROM points_of_interest")
+    suspend fun getPoiCount(): Int
 }
-
-
-
-

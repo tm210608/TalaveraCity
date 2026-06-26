@@ -1,8 +1,7 @@
 package com.talaveracity.app.data.repository
 
 import com.talaveracity.app.data.local.*
-import com.talaveracity.app.domain.model.CeramicPiece
-import com.talaveracity.app.domain.model.CulturalEvent
+import com.talaveracity.app.domain.model.*
 import com.talaveracity.app.domain.repository.CulturalRepository
 import com.talaveracity.app.data.remote.CulturalApiService
 import com.talaveracity.app.data.remote.toDomain
@@ -24,56 +23,56 @@ class CulturalRepositoryImpl @Inject constructor(
     private val rssParser = TalaveraRssParser()
 
     override suspend fun getEvents(): Result<List<CulturalEvent>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val responseBody = apiService.getRssFeed("https://www.talavera.es/agenda/feed/")
-                val events = rssParser.parse(responseBody.byteStream())
-                
-                if (events.isNotEmpty()) {
-                    eventDao.deleteCachedEvents(isNews = false)
-                    eventDao.insertCachedEvents(events.map { it.toCachedEntity(isNews = false) })
-                    Result.success(events)
-                } else {
-                    val cached = eventDao.getCachedEvents()
-                    if (cached.isNotEmpty()) {
-                        Result.success(cached.map { it.toDomain() })
-                    } else {
-                        Result.success(getMockEvents())
-                    }
-                }
-            } catch (e: Exception) {
-                val cached = eventDao.getCachedEvents()
-                if (cached.isNotEmpty()) {
-                    Result.success(cached.map { it.toDomain() })
-                } else {
-                    Result.success(getMockEvents())
-                }
-            }
-        }
+        return syncOfficialInfo(
+            url = "https://www.talavera.es/agenda/feed/",
+            type = InfoType.AGENDA,
+            fallbackMock = true
+        )
     }
 
     override suspend fun getOfficialNews(): Result<List<CulturalEvent>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val responseBody = apiService.getRssFeed("https://www.talavera.es/noticias/feed/")
-                val news = rssParser.parse(responseBody.byteStream())
-                
-                if (news.isNotEmpty()) {
-                    eventDao.deleteCachedEvents(isNews = true)
-                    eventDao.insertCachedEvents(news.map { it.toCachedEntity(isNews = true) })
-                    Result.success(news)
-                } else {
-                    val cached = eventDao.getCachedNews()
-                    Result.success(cached.map { it.toDomain() })
-                }
-            } catch (e: Exception) {
-                val cached = eventDao.getCachedNews()
-                if (cached.isNotEmpty()) {
-                    Result.success(cached.map { it.toDomain() })
-                } else {
-                    Result.failure(e)
-                }
+        return syncOfficialInfo(
+            url = "https://www.talavera.es/noticias/feed/",
+            type = InfoType.NEWS
+        )
+    }
+
+    override suspend fun getMunicipalAnnouncements(): Result<List<CulturalEvent>> {
+        return syncOfficialInfo(
+            url = "https://www.talavera.es/noticias/feed/", 
+            type = InfoType.ANNOUNCEMENT
+        )
+    }
+
+    private suspend fun syncOfficialInfo(
+        url: String, 
+        type: InfoType, 
+        fallbackMock: Boolean = false
+    ): Result<List<CulturalEvent>> = withContext(Dispatchers.IO) {
+        try {
+            val responseBody = apiService.getRssFeed(url)
+            val events = rssParser.parse(responseBody.byteStream())
+            
+            if (events.isNotEmpty()) {
+                eventDao.deleteOfficialInfoByType(type)
+                eventDao.insertOfficialInfo(events.map { it.toOfficialEntity(type) })
+                Result.success(events)
+            } else {
+                fetchCachedOrMock(type, fallbackMock)
             }
+        } catch (e: Exception) {
+            fetchCachedOrMock(type, fallbackMock)
+        }
+    }
+
+    private suspend fun fetchCachedOrMock(type: InfoType, fallbackMock: Boolean): Result<List<CulturalEvent>> {
+        val cached = eventDao.getOfficialInfoByType(type)
+        return if (cached.isNotEmpty()) {
+            Result.success(cached.map { it.toDomain() })
+        } else if (fallbackMock && type == InfoType.AGENDA) {
+            Result.success(getMockEvents())
+        } else {
+            Result.success(emptyList())
         }
     }
 
@@ -98,13 +97,15 @@ class CulturalRepositoryImpl @Inject constructor(
     override suspend fun getEventById(id: String): CulturalEvent? {
         return withContext(Dispatchers.IO) {
             val saved = eventDao.getAllSavedEventsOnce()
+            val allCached = InfoType.values().flatMap { eventDao.getOfficialInfoByType(it) }
+            
             saved.find { it.id == id }?.toDomain() 
-                ?: eventDao.getCachedEvents().find { it.id == id }?.toDomain()
-                ?: eventDao.getCachedNews().find { it.id == id }?.toDomain()
+                ?: allCached.find { it.id == id }?.toDomain()
                 ?: getMockEvents().find { it.id == id }
         }
     }
 
+    // Cerámica
     override fun getCollectedPieces(): Flow<List<CeramicPiece>> {
         return eventDao.getAllCollectedPieces().map { entities ->
             entities.map { it.toDomain() }
@@ -165,6 +166,54 @@ class CulturalRepositoryImpl @Inject constructor(
         }
     }
 
+    // Puntos de Interés (Mapa)
+    override fun getAllPois(): Flow<List<PuntoInteres>> {
+        return eventDao.getAllPois().map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+
+    override suspend fun syncPoisIfNeeded() {
+        withContext(Dispatchers.IO) {
+            if (eventDao.getPoiCount() == 0) {
+                val seedPois = getSeedPois()
+                eventDao.insertPois(seedPois.map { it.toEntity() })
+            }
+        }
+    }
+
+    private fun getSeedPois(): List<PuntoInteres> {
+        return listOf(
+            PuntoInteres(
+                "poi_puente", "Puente Viejo (Romano)", "Testigo romano y medieval sobre el Tajo.",
+                39.9575, -4.8315, PoiCategory.MONUMENT,
+                "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800"
+            ),
+            PuntoInteres(
+                "poi_museo_luna", "Museo Ruiz de Luna", "La mayor colección de cerámica del mundo.",
+                39.9588, -4.8335, PoiCategory.MUSEUM,
+                "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?auto=format&fit=crop&q=80&w=800"
+            ),
+            PuntoInteres(
+                "poi_basilica", "Basílica de Ntra. Sra. del Prado", "La Sixtina de la Cerámica.",
+                39.9632, -4.8256, PoiCategory.CHURCH,
+                "https://images.unsplash.com/photo-1543783230-050414a6003b?auto=format&fit=crop&q=80&w=800"
+            ),
+            PuntoInteres(
+                "poi_murallas", "Murallas de Talavera", "Recinto amurallado del siglo XIII.",
+                39.9585, -4.8350, PoiCategory.MONUMENT
+            ),
+            PuntoInteres(
+                "poi_alfar", "El Alfar del Carmen", "Antiguo taller convertido en centro cultural.",
+                39.9595, -4.8290, PoiCategory.POTTERY
+            ),
+            PuntoInteres(
+                "poi_plaza", "Plaza del Pan", "Centro histórico y administrativo.",
+                39.9583, -4.8322, PoiCategory.HISTORY
+            )
+        )
+    }
+
     private fun getMockEvents(): List<CulturalEvent> {
         return listOf(
             CulturalEvent(
@@ -182,27 +231,7 @@ class CulturalRepositoryImpl @Inject constructor(
                 "Recinto Ferial",
                 "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80&w=800",
                 "La festividad más grande de la ciudad con conciertos y tradiciones."
-            ),
-            CulturalEvent(
-                "3",
-                "Taller de Alfarería en Vivo",
-                "Todos los Sábados",
-                "Plaza del Pan",
-                "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&q=80&w=800",
-                "Aprende de los maestros artesanos locales en un entorno histórico."
-            ),
-            CulturalEvent(
-                "4",
-                "Ruta Nocturna: Murallas y Torres",
-                "Viernes Noche",
-                "Punto de Encuentro: Oficina de Turismo",
-                "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800",
-                "Descubre los secretos de la ciudad bajo la luz de la luna."
             )
         )
     }
 }
-
-
-
-
