@@ -6,9 +6,11 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
-import com.talaveracity.app.TalaveraCityApplication
 import com.talaveracity.app.MainActivity
 import com.talaveracity.app.R
+import com.talaveracity.app.TalaveraCityApplication
+import com.talaveracity.app.di.CulturalRepositoryEntryPoint
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,8 +44,12 @@ class EventWidgetProvider : AppWidgetProvider() {
         )
         views.setOnClickPendingIntent(R.id.widget_title, pendingIntent)
 
-        // Obtener datos del repositorio usando el contenedor de la aplicación
-        val repository = (context.applicationContext as TalaveraCityApplication).container.repository
+        // Obtener datos del repositorio mediante Hilt EntryPointAccessors
+        val app = context.applicationContext as TalaveraCityApplication
+        val repository = EntryPointAccessors.fromApplication(
+            app,
+            CulturalRepositoryEntryPoint::class.java
+        ).culturalRepository()
 
         CoroutineScope(Dispatchers.IO).launch {
             val result = repository.getEvents()

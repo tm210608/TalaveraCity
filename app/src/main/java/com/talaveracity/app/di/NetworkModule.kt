@@ -39,7 +39,8 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient, json: Json): Retrofit {
         val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
-            .baseUrl("https://api.example.com/")
+            // TODO: Reemplazar con la URL base real de la API del Ayuntamiento de Talavera
+            .baseUrl("https://www.talavera.es/api/")
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()

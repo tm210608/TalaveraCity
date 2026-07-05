@@ -8,6 +8,8 @@ import org.junit.Assert.*
  * Example local unit test, which will execute on the development machine (host).
  *
  * See [testing documentation](http://d.android.com/tools/testing).
+ *
+ * TODO: El directorio de tests debería ser com/talaveracity/app/ en lugar de com/example/eboraazule/
  */
 class ExampleUnitTest {
     @Test

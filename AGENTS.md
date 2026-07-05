@@ -2,7 +2,7 @@
 
 ## Descripción General del Proyecto
 
-**EboraAzule** es una aplicación Android en Compose completamente en español que muestra eventos culturales y patrimonio (tradiciones de cerámica de Talavera). Utiliza arquitectura limpia con inyección de dependencias manual, Room para persistencia, Retrofit para APIs, y Navigation3 para enrutamiento.
+**EboraAzule** es una aplicación Android en Compose completamente en español que muestra eventos culturales y patrimonio (tradiciones de cerámica de Talavera). Utiliza arquitectura limpia con Hilt para inyección de dependencias, Room para persistencia, Retrofit para APIs, y Navigation3 para enrutamiento.
 
 **SDK Objetivo**: 37 | **SDK Mínimo**: 24 | **Kotlin**: 2.2.10
 
@@ -22,7 +22,6 @@ Capa de Datos (BD local Room + API remota Retrofit)
 ```
 
 ### Archivos Clave y Responsabilidades
-- **`AppContainer.kt`**: Inyección de dependencias manual—inicializa Retrofit, BD Room, y repositorio
 - **`CulturalRepository.kt`**: Orquesta datos locales/remotos; sincroniza con el feed RSS oficial del Ayuntamiento de Talavera.
 - **`NavGraph.kt`**: Toda la lógica de navegación; crea ViewModels con factory y gestiona pila de atrás
 - **`Routes.kt`**: Interfaz sellada que define 5 destinos de navegación (Welcome→LandscapeCeramic→CeramicAccess→CulturalEvents→Exploration)
@@ -47,9 +46,9 @@ Capa de Datos (BD local Room + API remota Retrofit)
 ### Generación de Código (KSP)
 La construcción depende de KSP para:
 - **Room**: `androidx.room.compiler` genera DAOs
-- **Moshi**: `moshi-kotlin-codegen` genera adaptadores JSON
+- **Hilt**: `hilt-compiler` genera componentes de inyección
 
-Al agregar nuevas entidades Room o modelos Moshi, KSP regenerará automáticamente en la siguiente construcción.
+Al agregar nuevas entidades Room, KSP regenerará automáticamente en la siguiente construcción.
 
 ### Pruebas
 - **Pruebas unitarias**: `src/test/java/` (ejecutar con `./gradlew test`)
@@ -102,12 +101,8 @@ class [Característica]ViewModel(repo: Repositorio) : ViewModel() {
 - Material3 `Scaffold` con `topBar`/`bottomBar` para estructura
 - Usar `ElevatedCard` con `RoundedCornerShape(20.dp)` para estilos de tarjeta consistentes
 
-### Inyección de Dependencias (Manual, No Hilt)
-```kotlin
-val contenedor = (context.applicationContext as EboraApplication).contenedor
-val viewModel = viewModel(factory = ViewModelFactory(contenedor.repositorio))
-```
-Todas las cadenas de dependencia fluyen a través del singleton `EboraApplication.contenedor`.
+### Inyección de Dependencias (Hilt)
+El proyecto usa **Hilt** para la inyección de dependencias. Las dependencias se proporcionan mediante módulos Dagger-Hilt y se inyectan con `@Inject` y `@HiltViewModel`. Para acceso desde clases que no admiten inyección directa (como AppWidgetProvider), usa `EntryPointAccessors.fromApplication()`.
 
 ---
 
@@ -122,8 +117,7 @@ Todas las cadenas de dependencia fluyen a través del singleton `EboraApplicatio
 
 ### Datos y Redes
 - `androidx.room`: Base de datos local (versión 2.7.0)
-- `com.squareup.retrofit2`: Cliente HTTP (2.12.0) con convertidor Moshi
-- `com.squareup.moshi`: Serialización JSON (1.15.2, usa codegen KSP)
+- `com.squareup.retrofit2`: Cliente HTTP (2.12.0) con convertidor kotlinx-serialization
 - `kotlinx.serialization`: Marco de serialización (1.9.0)
 
 ### Navegación y Ciclo de Vida
@@ -138,7 +132,7 @@ Todas las cadenas de dependencia fluyen a través del singleton `EboraApplicatio
 - `accompanist-permissions` (0.37.3): Manejo de permisos
 
 ### Construcción y Generación de Código
-- **KSP** (2.3.5): Procesador de anotaciones
+- **KSP** (2.3.5): Procesador de anotaciones (Room y Hilt)
 - **Plugin de Serialización Kotlin** (2.2.21)
 - **AGP** (9.2.0): Android Gradle Plugin
 
@@ -191,7 +185,7 @@ repositorio.obtenerEventos().fold(
 
 ### Notas de Depuración
 - **Datos simulados**: Actualmente devuelve eventos codificados con retraso de 1500ms en `obtenerEventosSimulados()`
-- **URL base de Retrofit**: Establecida en placeholder `"https://api.example.com/"` en `AppContainer` — actualizar cuando API real esté disponible
+- **URL base de Retrofit**: Establecida en placeholder `"https://www.talavera.es/api/"` en `NetworkModule.kt` — actualizar cuando API real esté disponible
 - **Filtrado de Logcat**: Usar `adb logcat | grep -i eboraazule`
 
 ---
@@ -199,19 +193,20 @@ repositorio.obtenerEventos().fold(
 ## Referencia de Organización de Archivos
 ```
 app/src/
-├── main/java/com/example/eboraazule/
+├── main/java/com/talaveracity/app/
 │   ├── data/
 │   │   ├── local/         # Entidades Room, DAOs, convertidores
 │   │   ├── remote/        # Interfaces de servicio API, DTOs
 │   │   ├── model/         # Modelos de dominio (clases de datos inmutables)
 │   │   └── repository/    # Lógica de fuente única de verdad
-│   ├── di/                # Configuración de inyección manual AppContainer
+│   ├── di/                # Módulos Hilt (NetworkModule, etc.)
 │   ├── ui/
 │   │   ├── screens/       # Funciones pantalla Composable
 │   │   ├── viewmodel/     # ViewModels y clases de estado de UI
+│   │   ├── widget/        # AppWidgetProvider
 │   │   └── theme/         # Definiciones de tema Material3
 │   ├── navigation/        # Rutas, NavGraph
-│   ├── EboraApplication.kt
+│   ├── TalaveraCityApplication.kt
 │   └── MainActivity.kt
 ├── res/                   # Recursos XML (colores, strings, estilos)
 └── AndroidManifest.xml
@@ -242,9 +237,9 @@ app/src/
 ## Puntos Clave para Agentes de IA
 
 ### Antes de Hacer Cambios
-1. Leer `AppContainer.kt` para entender cómo fluyen las dependencias
-2. Revisar `Routes.kt` y `NavGraph.kt` para entender toda la estructura de navegación
-3. Estudiar el patrón UiState/ViewModel en `EventsViewModel.kt`
+1. Revisar `Routes.kt` y `NavGraph.kt` para entender toda la estructura de navegación
+2. Estudiar el patrón UiState/ViewModel en `EventsViewModel.kt`
+3. Revisar los módulos Hilt en `di/` para entender el grafo de dependencias
 4. Notar que TODO está en español (UI, código, comentarios)
 
 ### Al Agregar Características
@@ -254,11 +249,10 @@ app/src/
 4. Escribir textos en español siguiendo el estilo existente
 
 ### Evitar
-- No usar Hilt (proyecto usa inyección manual)
 - No cambiar nombres de rutas (están definidas en interfaz sellada)
 - No mezclar lógica de negocio en Composables (usar ViewModels)
 - No ignorar los convertidores `toDomain()`/`toEntity()`
 
 ---
 
-**Última Actualización**: 7 de Mayo de 2026 | **ID de App**: com.example.eboraazule
+**Última Actualización**: 7 de Mayo de 2026 | **ID de App**: com.talaveracity.app
